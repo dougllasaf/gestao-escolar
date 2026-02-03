@@ -59,6 +59,33 @@ const AccessDenied = () => {
   )
 }
 
+const VerifyingPermissions = () => {
+  useEffect(() => {
+    // If stuck here for more than 5 seconds, force logout and redirect
+    const timer = setTimeout(() => {
+      localStorage.clear()
+      sessionStorage.clear()
+      const cookies = document.cookie.split(";")
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i]
+        const eqPos = cookie.indexOf("=")
+        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/"
+      }
+      supabase.auth.signOut().catch(console.error)
+      window.location.href = '/'
+    }, 5000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  return (
+    <div className="h-screen flex flex-col items-center justify-center">
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-4"></div>
+      <p className="text-gray-600">Verificando permissões...</p>
+    </div>
+  )
+}
+
 export default function Home() {
   const { session, role, loading } = useAuth()
   const [email, setEmail] = useState('')
@@ -113,9 +140,9 @@ export default function Home() {
   }
 
   // Role-based Routing
-  // If role is null but session exists, we're still fetching the profile - show loading
+  // If role is null but session exists, we're still fetching the profile - show loading with timeout
   if (session && role === null) {
-    return <div className="h-screen flex items-center justify-center">Verificando permissões...</div>
+    return <VerifyingPermissions />
   }
 
   switch (role) {
