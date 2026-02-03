@@ -9,10 +9,15 @@ import { supabase } from '@/lib/supabaseClient'
 
 const AccessDenied = () => {
   useEffect(() => {
-    const timer = setTimeout(async () => {
+    const timer = setTimeout(() => {
+      // Clear everything immediately
       localStorage.clear()
       sessionStorage.clear()
-      await supabase.auth.signOut()
+
+      // Try to sign out, but don't wait for it to block the redirect
+      supabase.auth.signOut().catch(console.error)
+
+      // Force redirect
       window.location.href = '/'
     }, 3000)
     return () => clearTimeout(timer)
@@ -24,10 +29,10 @@ const AccessDenied = () => {
       <p className="mb-2">Seu perfil não tem permissão para acessar este painel.</p>
       <p className="text-sm text-gray-500 mb-4">Você será desconectado automaticamente em 3 segundos...</p>
       <button
-        onClick={async () => {
+        onClick={() => {
           localStorage.clear()
           sessionStorage.clear()
-          await supabase.auth.signOut()
+          supabase.auth.signOut().catch(console.error)
           window.location.href = '/'
         }}
         className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
