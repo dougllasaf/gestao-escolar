@@ -8,80 +8,41 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 
 const AccessDenied = () => {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // Clear Local Storage & Session Storage
-      localStorage.clear()
-      sessionStorage.clear()
-
-      // Clear Cookies (Crucial for @supabase/ssr)
-      const cookies = document.cookie.split(";")
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i]
-        const eqPos = cookie.indexOf("=")
-        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie
-        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/"
-      }
-
-      // Try to sign out
-      supabase.auth.signOut().catch(console.error)
-
-      // Force redirect
-      window.location.href = '/'
-    }, 3000)
-    return () => clearTimeout(timer)
-  }, [])
+  const handleLogout = () => {
+    localStorage.clear()
+    sessionStorage.clear()
+    const cookies = document.cookie.split(";")
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i]
+      const eqPos = cookie.indexOf("=")
+      const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/"
+    }
+    supabase.auth.signOut().catch(console.error)
+    window.location.href = '/'
+  }
 
   return (
     <div className="h-screen flex flex-col items-center justify-center text-center p-4">
       <h1 className="text-xl font-bold text-red-600 mb-2">Acesso Negado</h1>
-      <p className="mb-2">Seu perfil não tem permissão para acessar este painel.</p>
-      <p className="text-sm text-gray-500 mb-4">Você será desconectado automaticamente em 3 segundos...</p>
+      <p className="mb-4">Seu perfil não tem permissão para acessar este painel.</p>
       <button
-        onClick={() => {
-          localStorage.clear()
-          sessionStorage.clear()
-          const cookies = document.cookie.split(";")
-          for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i]
-            const eqPos = cookie.indexOf("=")
-            const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie
-            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/"
-          }
-          supabase.auth.signOut().catch(console.error)
-          window.location.href = '/'
-        }}
+        onClick={handleLogout}
         className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
       >
-        Sair Agora
+        Sair e Fazer Login
       </button>
     </div>
   )
 }
 
 const VerifyingPermissions = () => {
-  useEffect(() => {
-    // If stuck here for more than 5 seconds, force logout and redirect
-    const timer = setTimeout(() => {
-      localStorage.clear()
-      sessionStorage.clear()
-      const cookies = document.cookie.split(";")
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i]
-        const eqPos = cookie.indexOf("=")
-        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie
-        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/"
-      }
-      supabase.auth.signOut().catch(console.error)
-      window.location.href = '/'
-    }, 5000)
-    return () => clearTimeout(timer)
-  }, [])
-
+  // NO auto-logout timer - just show loading, let the user stay logged in
   return (
     <div className="h-screen flex flex-col items-center justify-center">
       <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-4"></div>
       <p className="text-gray-600">Verificando permissões...</p>
+      <p className="text-xs text-gray-400 mt-2">Aguarde um momento...</p>
     </div>
   )
 }

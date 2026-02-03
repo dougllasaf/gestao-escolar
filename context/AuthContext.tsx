@@ -71,15 +71,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
                 if (session?.user) {
                     const fetchedRole = await fetchRoleWithTimeout(session.user.id)
-                    setRole(fetchedRole)
-                    cacheRole(fetchedRole)
+                    // CRITICAL: Only update role if we got a valid response
+                    // If server timesout, KEEP the existing cached role
+                    if (fetchedRole) {
+                        setRole(fetchedRole)
+                        cacheRole(fetchedRole)
+                    }
+                    // If fetchedRole is null but we have cached role, keep it!
+                    // Don't clear the cache on timeout
                 } else {
-                    // No session - clear cache
+                    // No session means user is truly logged out
                     setRole(null)
                     cacheRole(null)
                 }
             } catch (err) {
                 console.error('Session fetch error:', err)
+                // On error, keep existing role - don't clear it
             }
             setLoading(false)
         }
@@ -98,9 +105,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
             if (session?.user) {
                 const fetchedRole = await fetchRoleWithTimeout(session.user.id)
-                setRole(fetchedRole)
-                cacheRole(fetchedRole)
+                // Only update if we got a valid role, otherwise keep cached
+                if (fetchedRole) {
+                    setRole(fetchedRole)
+                    cacheRole(fetchedRole)
+                }
             } else {
+                // Only clear role if there's truly no session
                 setRole(null)
                 cacheRole(null)
             }
