@@ -28,7 +28,7 @@ export default function Home() {
     return (
       <div className="h-screen flex items-center justify-center bg-gray-100">
         <form onSubmit={handleLogin} className="bg-white p-8 rounded shadow-md w-96">
-          <h1 className="text-2xl font-bold mb-6 text-center text-blue-900">Transporte Escolar</h1>
+          <h1 className="text-2xl font-bold mb-6 text-center text-blue-900">Gestão Transporte Escolar</h1>
 
           {errorObj && (
             <div className="mb-4 p-3 bg-red-50 text-red-600 border border-red-200 rounded text-sm text-center">
