@@ -113,6 +113,11 @@ export default function Home() {
   }
 
   // Role-based Routing
+  // If role is null but session exists, we're still fetching the profile - show loading
+  if (session && role === null) {
+    return <div className="h-screen flex items-center justify-center">Verificando permissões...</div>
+  }
+
   switch (role) {
     case 'super_admin':
       return <SuperAdminPanel />
@@ -121,6 +126,7 @@ export default function Home() {
     case 'monitor':
       return <MonitorPanel />
     default:
+      // Only show AccessDenied if we have a session AND role fetch completed with invalid role
       return <AccessDenied />
   }
 }
