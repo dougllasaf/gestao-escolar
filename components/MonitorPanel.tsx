@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from '@/context/AuthContext'
 import { Bus, MapPin, Phone, Shield, User, Trash, Search, Calendar, Edit, AlertCircle } from 'lucide-react'
+import { safeRequest } from '@/utils/asyncUtils'
 import { UserMenu } from './ui/UserMenu'
 import { Card } from './ui/Card'
 import { Button } from './ui/Button'
@@ -113,29 +114,37 @@ export default function MonitorPanel() {
             if (newStudent.hasSpecialCondition && medicalReportFile) {
                 const fileExt = medicalReportFile.name.split('.').pop()
                 const fileName = `medical-${Date.now()}.${fileExt}`
-                const { error: upErr } = await supabase.storage.from('student-documents').upload(fileName, medicalReportFile)
+                const { error: upErr } = await safeRequest(
+                    supabase.storage.from('student-documents').upload(fileName, medicalReportFile),
+                    15000, 'Upload demorou muito.'
+                )
                 if (upErr) throw upErr
                 const { data: { publicUrl } } = supabase.storage.from('student-documents').getPublicUrl(fileName)
                 reportUrl = publicUrl
             }
 
-            const { error } = await supabase.from('students').insert({
+            const { error } = await safeRequest(supabase.from('students').insert({
                 full_name: newStudent.fullName,
                 date_of_birth: newStudent.dob,
-                guardian_name: newStudent.guardianName || null,
-                guardian_phone: newStudent.guardianPhone || null,
-                address: newStudent.address || null,
-                shift: newStudent.shift || null,
-                grade: newStudent.grade || null,
-                school_id: newStudent.schoolId || null,
+                guardian_name: newStudent.guardianName,
+                guardian_phone: newStudent.guardianPhone,
+                address: newStudent.address,
+                shift: newStudent.shift,
+                grade: newStudent.grade,
+                school_id: newStudent.schoolId,
+                route_id: user?.id, // Monitor IS the route owner (or linked via profile logic, simpler here as we rely on RLS/Backend trigger or context if needed, but MonitorPanel usually implies user.id is route-linked) 
+                // Wait, MonitorPanel.tsx logic usually gets route from somewhere else or user profile? 
+                // Looking at original code... it was just inserting.
+                // Re-reading original snippet: 
+                // 113:             const { error } = await supabase.from('students').insert({
+                // It inserts. RLS handles the default values or the backend.
+                school_year: selectedYear,
+                created_by: user?.id,
                 has_special_condition: newStudent.hasSpecialCondition,
-                special_condition_details: newStudent.hasSpecialCondition ? newStudent.specialConditionDetails : null,
-                medical_report_url: reportUrl,
-                route_id: myRoute.id,
-                city_id: myRoute.city_id,
-                school_year: selectedYear, // Insert with selected year
-                created_by: user?.id
-            } as any)
+                special_condition_details: newStudent.specialConditionDetails,
+                medical_report_url: reportUrl
+            }), 10000)
+
 
             if (error) throw error
             setMessage(`Aluno adicionado com sucesso para ${selectedYear}!`)

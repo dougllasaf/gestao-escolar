@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from '@/context/AuthContext'
-import { Plus, Users, Map, School, LogOut, Trash, ArrowLeft, Bus, AlertCircle, FileText, Upload, User, Search, GraduationCap, Filter, Calendar, Edit } from 'lucide-react'
+import { Plus, Users, Map, School, LogOut, Trash, ArrowLeft, Bus, AlertCircle, FileText, Upload, User, Search, GraduationCap, Filter, Calendar, Edit, CheckCircle, X, MapPin } from 'lucide-react'
+import { safeRequest } from '@/utils/asyncUtils'
 import { UserMenu } from './ui/UserMenu'
 
 import { Card } from './ui/Card'
@@ -188,7 +189,10 @@ export default function CityAdminPanel() {
             if (vehicleFile) {
                 const fileExt = vehicleFile.name.split('.').pop()
                 const fileName = `vehicle-${Date.now()}.${fileExt}`
-                const { error: upErr } = await supabase.storage.from('route-documents').upload(fileName, vehicleFile)
+                const { error: upErr } = await safeRequest(
+                    supabase.storage.from('route-documents').upload(fileName, vehicleFile),
+                    15000, 'Upload do documento do veículo demorou muito.'
+                )
                 if (upErr) throw upErr
                 const { data: { publicUrl } } = supabase.storage.from('route-documents').getPublicUrl(fileName)
                 vehicleDocUrl = publicUrl
@@ -197,13 +201,16 @@ export default function CityAdminPanel() {
             if (driverFile) {
                 const fileExt = driverFile.name.split('.').pop()
                 const fileName = `driver-${Date.now()}.${fileExt}`
-                const { error: upErr } = await supabase.storage.from('route-documents').upload(fileName, driverFile)
+                const { error: upErr } = await safeRequest(
+                    supabase.storage.from('route-documents').upload(fileName, driverFile),
+                    15000, 'Upload do documento do motorista demorou muito.'
+                )
                 if (upErr) throw upErr
                 const { data: { publicUrl } } = supabase.storage.from('route-documents').getPublicUrl(fileName)
                 driverDocUrl = publicUrl
             }
 
-            const { error } = await supabase.from('routes').insert({
+            const { error } = await safeRequest(supabase.from('routes').insert({
                 route_number: newRoute.number,
                 driver_name: newRoute.driver,
                 vehicle_type: newRoute.vehicleType,
@@ -211,7 +218,7 @@ export default function CityAdminPanel() {
                 max_capacity: newRoute.maxCapacity ? parseInt(newRoute.maxCapacity) : null,
                 vehicle_document_url: vehicleDocUrl, driver_document_url: driverDocUrl,
                 city_id: cityId
-            } as any)
+            } as any), 10000)
 
             if (error) throw error
             setMessage('Rota criada com sucesso!')
@@ -226,7 +233,7 @@ export default function CityAdminPanel() {
         setLoading(true)
         try {
             const cityId = await getCityId()
-            const { error } = await supabase.from('schools').insert({ name: newSchool.name, city_id: cityId } as any)
+            const { error } = await safeRequest(supabase.from('schools').insert({ name: newSchool.name, city_id: cityId } as any), 10000)
 
             if (error) throw error
             setMessage('Escola criada com sucesso!')
@@ -276,13 +283,16 @@ export default function CityAdminPanel() {
             if (newStudent.hasSpecialCondition && medicalReportFile) {
                 const fileExt = medicalReportFile.name.split('.').pop()
                 const fileName = `medical-${Date.now()}.${fileExt}`
-                const { error: upErr } = await supabase.storage.from('student-documents').upload(fileName, medicalReportFile)
+                const { error: upErr } = await safeRequest(
+                    supabase.storage.from('student-documents').upload(fileName, medicalReportFile),
+                    15000, 'Upload demorou muito.'
+                )
                 if (upErr) throw upErr
                 const { data: { publicUrl } } = supabase.storage.from('student-documents').getPublicUrl(fileName)
                 reportUrl = publicUrl
             }
 
-            const { error } = await supabase.from('students').insert({
+            const { error } = await safeRequest(supabase.from('students').insert({
                 full_name: newStudent.fullName,
                 date_of_birth: newStudent.dob,
                 guardian_name: newStudent.guardianName,
@@ -298,7 +308,7 @@ export default function CityAdminPanel() {
                 city_id: selectedRoute.city_id,
                 school_year: selectedYear, // Insert with SELECTED YEAR
                 created_by: user?.id
-            } as any)
+            } as any), 10000)
 
             if (error) throw error
             setMessage(`Aluno adicionado para o Ano Letivo ${selectedYear}!`)
@@ -331,13 +341,16 @@ export default function CityAdminPanel() {
             if (editMedicalFile) {
                 const fileExt = editMedicalFile.name.split('.').pop()
                 const fileName = `medical-update-${Date.now()}.${fileExt}`
-                const { error: upErr } = await supabase.storage.from('student-documents').upload(fileName, editMedicalFile)
+                const { error: upErr } = await safeRequest(
+                    supabase.storage.from('student-documents').upload(fileName, editMedicalFile),
+                    15000, 'Upload demorou muito.'
+                )
                 if (upErr) throw upErr
                 const { data: { publicUrl } } = supabase.storage.from('student-documents').getPublicUrl(fileName)
                 reportUrl = publicUrl
             }
 
-            const { error } = await (supabase.from('students') as any).update({
+            const { error } = await safeRequest((supabase.from('students') as any).update({
                 full_name: s.full_name,
                 date_of_birth: s.date_of_birth,
                 guardian_name: s.guardian_name,
@@ -350,7 +363,7 @@ export default function CityAdminPanel() {
                 special_condition_details: s.special_condition_details,
                 medical_report_url: reportUrl,
                 route_id: s.route_id
-            }).eq('id', s.id)
+            }).eq('id', s.id), 10000)
 
             if (error) throw error
             setMessage('Aluno atualizado com sucesso!')

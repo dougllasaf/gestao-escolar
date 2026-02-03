@@ -6,6 +6,7 @@ import { Modal } from './Modal'
 import { Button } from './Button'
 import { Input } from './Forms'
 import { CheckCircle } from 'lucide-react'
+import { safeRequest } from '@/utils/asyncUtils'
 
 interface ChangePasswordModalProps {
     isOpen: boolean
@@ -34,7 +35,11 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
         setMessage(null)
 
         try {
-            const { error } = await supabase.auth.updateUser({ password: password })
+            const { error } = await safeRequest(
+                supabase.auth.updateUser({ password: password }),
+                10000,
+                'O servidor demorou muito para responder. Verifique sua conexão.'
+            )
             if (error) throw error
             setLoading(false)
             setIsSuccess(true)
