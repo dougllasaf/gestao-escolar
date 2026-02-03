@@ -901,17 +901,21 @@ export default function CityAdminPanel() {
                                 <table className="w-full text-sm text-left">
                                     <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-200">
                                         <tr>
-                                            <th className="px-6 py-3">Nome</th>
-                                            <th className="px-6 py-3">Escola</th>
-                                            <th className="px-6 py-3">Rota</th>
-                                            <th className="px-6 py-3">Responsável</th>
-                                            <th className="px-6 py-3 text-right">Ações</th>
+                                            <th className="px-4 py-3">Nome</th>
+                                            <th className="px-4 py-3">Data Nasc.</th>
+                                            <th className="px-4 py-3">Escola</th>
+                                            <th className="px-4 py-3">Série/Turno</th>
+                                            <th className="px-4 py-3">Rota</th>
+                                            <th className="px-4 py-3">Endereço</th>
+                                            <th className="px-4 py-3">Responsável</th>
+                                            <th className="px-4 py-3">Médico</th>
+                                            <th className="px-4 py-3 text-right">Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
                                         {filteredAllStudents.map(s => (
                                             <tr key={s.id} className="hover:bg-gray-50/50 transition-colors">
-                                                <td className="px-6 py-3 font-medium text-gray-900">
+                                                <td className="px-4 py-3 font-medium text-gray-900">
                                                     <div>
                                                         {s.full_name}
                                                         {s.has_special_condition && <span className="ml-2 text-[10px] bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded border border-yellow-200">⚠</span>}
@@ -922,8 +926,17 @@ export default function CityAdminPanel() {
                                                         </div>
                                                     )}
                                                 </td>
-                                                <td className="px-6 py-3 text-gray-600">{s.schools?.name || '-'}</td>
-                                                <td className="px-6 py-3">
+                                                <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                                                    {s.date_of_birth ? new Date(s.date_of_birth).toLocaleDateString('pt-BR') : '-'}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-600">{s.schools?.name || '-'}</td>
+                                                <td className="px-4 py-3 text-gray-600">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-xs font-medium">{s.grade || '-'}</span>
+                                                        <span className="text-[10px] text-gray-400">{s.shift || '-'}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3">
                                                     {s.routes ? (
                                                         <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-blue-50 text-blue-700 text-xs font-medium">
                                                             <Bus size={10} />
@@ -931,13 +944,25 @@ export default function CityAdminPanel() {
                                                         </span>
                                                     ) : <span className="text-gray-400">-</span>}
                                                 </td>
-                                                <td className="px-6 py-3 text-gray-600">
+                                                <td className="px-4 py-3 text-gray-600 text-xs max-w-[150px] truncate" title={s.address}>
+                                                    {s.address || '-'}
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-600">
                                                     <div className="flex flex-col">
-                                                        <span>{s.guardian_name}</span>
-                                                        <span className="text-xs text-gray-400">{s.guardian_phone}</span>
+                                                        <span className="text-xs">{s.guardian_name || '-'}</span>
+                                                        <span className="text-[10px] text-gray-400">{s.guardian_phone || '-'}</span>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-3 text-right">
+                                                <td className="px-4 py-3 text-center">
+                                                    {s.has_medical_condition ? (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-red-50 text-red-700 text-[10px] font-medium">
+                                                            ⚕️ Sim
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-gray-400 text-xs">Não</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-3 text-right">
                                                     <div className="flex justify-end gap-1">
                                                         <Button variant="ghost" onClick={() => setEditStudentModal({ isOpen: true, student: s })} className="text-gray-300 hover:text-blue-600"><Edit size={16} /></Button>
                                                         <Button variant="ghost" onClick={() => setDeleteModal({ isOpen: true, type: 'student', id: s.id, name: s.full_name })} className="text-gray-300 hover:text-red-500"><Trash size={16} /></Button>
