@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   title: "Gestão Transporte Escolar",
   description: "Plataforma de gestão de transporte escolar municipal",
   icons: {
-    icon: "/favicon.png",
-    apple: "/favicon.png",
+    icon: "/bus-icon.svg",
+    apple: "/bus-icon.svg",
   },
 };
 

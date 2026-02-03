@@ -495,7 +495,7 @@ export default function CityAdminPanel() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-3">
-                            <img src="/favicon.png" alt="Ônibus" className="w-10 h-10" />
+                            <img src="/bus-icon.svg" alt="Ônibus" className="w-10 h-10" />
                             <h1 className="text-xl font-bold text-gray-900 tracking-tight hidden sm:block">Gestão Municipal</h1>
                         </div>
 

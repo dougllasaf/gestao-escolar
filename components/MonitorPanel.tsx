@@ -303,7 +303,7 @@ export default function MonitorPanel() {
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <div>
                             <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                                <img src="/favicon.png" alt="Ônibus" className="w-8 h-8" />
+                                <img src="/bus-icon.svg" alt="Ônibus" className="w-8 h-8" />
                                 Rota {myRoute.route_number}
                             </h1>
                             <p className="text-xs text-gray-500 ml-9">Motorista: {myRoute.driver_name}</p>

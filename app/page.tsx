@@ -71,7 +71,7 @@ export default function Home() {
           {/* Header with Bus Logo */}
           <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 px-8 py-6 text-center">
             <img
-              src="/favicon.png"
+              src="/bus-icon.svg"
               alt="Logo Ônibus Escolar"
               className="w-20 h-20 mx-auto mb-3 drop-shadow-lg"
             />
