@@ -10,11 +10,20 @@ import { supabase } from '@/lib/supabaseClient'
 const AccessDenied = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
-      // Clear everything immediately
+      // Clear Local Storage & Session Storage
       localStorage.clear()
       sessionStorage.clear()
 
-      // Try to sign out, but don't wait for it to block the redirect
+      // Clear Cookies (Crucial for @supabase/ssr)
+      const cookies = document.cookie.split(";")
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i]
+        const eqPos = cookie.indexOf("=")
+        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/"
+      }
+
+      // Try to sign out
       supabase.auth.signOut().catch(console.error)
 
       // Force redirect
@@ -32,6 +41,13 @@ const AccessDenied = () => {
         onClick={() => {
           localStorage.clear()
           sessionStorage.clear()
+          const cookies = document.cookie.split(";")
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i]
+            const eqPos = cookie.indexOf("=")
+            const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie
+            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/"
+          }
           supabase.auth.signOut().catch(console.error)
           window.location.href = '/'
         }}
