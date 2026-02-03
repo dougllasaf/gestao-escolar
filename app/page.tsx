@@ -66,36 +66,64 @@ export default function Home() {
 
   if (!session) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-100">
-        <form onSubmit={handleLogin} className="bg-white p-8 rounded shadow-md w-96">
-          <h1 className="text-2xl font-bold mb-6 text-center text-blue-900">Gestão Transporte Escolar</h1>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+          {/* Header with Bus Logo */}
+          <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 px-8 py-6 text-center">
+            <img
+              src="/favicon.png"
+              alt="Logo Ônibus Escolar"
+              className="w-20 h-20 mx-auto mb-3 drop-shadow-lg"
+            />
+            <h1 className="text-2xl font-bold text-gray-800">Gestão Transporte Escolar</h1>
+            <p className="text-sm text-gray-700 mt-1">Sistema Municipal de Transporte</p>
+          </div>
 
-          {errorObj && (
-            <div className="mb-4 p-3 bg-red-50 text-red-600 border border-red-200 rounded text-sm text-center">
-              {errorObj}
+          {/* Login Form */}
+          <form onSubmit={handleLogin} className="p-8">
+            {errorObj && (
+              <div className="mb-4 p-3 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm text-center flex items-center justify-center gap-2">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                {errorObj}
+              </div>
+            )}
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+              <input
+                type="email"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+              />
             </div>
-          )}
 
-          <input
-            className="w-full mb-3 p-2 border rounded"
-            placeholder="E-mail"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            className="w-full mb-6 p-2 border rounded"
-            placeholder="Senha"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-          />
-          <button className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
-            Entrar
-          </button>
-          <p className="mt-4 text-xs text-center text-gray-500">
-            Acesso Restrito. Contate seu administrador.
-          </p>
-        </form>
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+              <input
+                type="password"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                placeholder="••••••••"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-all font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
+              Entrar no Sistema
+            </button>
+
+            <p className="mt-6 text-xs text-center text-gray-500">
+              🔒 Acesso Restrito • Contate seu administrador
+            </p>
+          </form>
+        </div>
       </div>
     )
   }
