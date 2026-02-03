@@ -25,27 +25,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
+        // Helper to fetch role with timeout
+        const fetchRoleWithTimeout = async (userId: string): Promise<string | null> => {
+            const timeoutPromise = new Promise<null>((resolve) => {
+                setTimeout(() => resolve(null), 5000) // 5s timeout
+            })
+
+            const fetchPromise = (async () => {
+                try {
+                    const { data } = await supabase
+                        .from('user_profiles')
+                        .select('role')
+                        .eq('id', userId)
+                        .single() as any
+                    return data?.role ?? null
+                } catch {
+                    return null
+                }
+            })()
+
+            return Promise.race([fetchPromise, timeoutPromise])
+        }
+
         // Initial fetch
         const fetchSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession()
-            setSession(session)
-            setUser(session?.user ?? null)
+            try {
+                const { data: { session } } = await supabase.auth.getSession()
+                setSession(session)
+                setUser(session?.user ?? null)
 
-            if (session?.user) {
-                const { data } = await supabase
-                    .from('user_profiles')
-                    .select('role')
-                    .eq('id', session.user.id)
-                    .single() as any
-                setRole(data?.role ?? null)
+                if (session?.user) {
+                    const fetchedRole = await fetchRoleWithTimeout(session.user.id)
+                    setRole(fetchedRole)
+                }
+            } catch (err) {
+                console.error('Session fetch error:', err)
             }
             setLoading(false)
         }
 
-        // Safety Timeout (3s max load) to prevent White Screen of Death
+        // Safety Timeout (5s max load) to prevent White Screen of Death
         const timer = setTimeout(() => {
             setLoading(false)
-        }, 3000)
+        }, 5000)
 
         fetchSession()
 
@@ -55,12 +77,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setUser(session?.user ?? null)
 
             if (session?.user) {
-                const { data } = await supabase
-                    .from('user_profiles')
-                    .select('role')
-                    .eq('id', session.user.id)
-                    .single() as any
-                setRole(data?.role ?? null)
+                const fetchedRole = await fetchRoleWithTimeout(session.user.id)
+                setRole(fetchedRole)
             } else {
                 setRole(null)
             }
