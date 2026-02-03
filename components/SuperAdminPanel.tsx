@@ -118,9 +118,7 @@ export default function SuperAdminPanel() {
             <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
                 <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                        <div className="bg-indigo-600 p-2 rounded-lg text-white">
-                            <Shield size={20} />
-                        </div>
+                        <img src="/favicon.png" alt="Ônibus" className="w-10 h-10" />
                         <h1 className="text-xl font-bold text-gray-900 tracking-tight">Painel Super Admin</h1>
                     </div>
                     <UserMenu />
