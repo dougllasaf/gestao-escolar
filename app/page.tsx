@@ -4,8 +4,39 @@ import { useAuth } from '@/context/AuthContext'
 import SuperAdminPanel from '@/components/SuperAdminPanel'
 import CityAdminPanel from '@/components/CityAdminPanel'
 import MonitorPanel from '@/components/MonitorPanel'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
+
+const AccessDenied = () => {
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      localStorage.clear()
+      sessionStorage.clear()
+      await supabase.auth.signOut()
+      window.location.href = '/'
+    }, 3000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  return (
+    <div className="h-screen flex flex-col items-center justify-center text-center p-4">
+      <h1 className="text-xl font-bold text-red-600 mb-2">Acesso Negado</h1>
+      <p className="mb-2">Seu perfil não tem permissão para acessar este painel.</p>
+      <p className="text-sm text-gray-500 mb-4">Você será desconectado automaticamente em 3 segundos...</p>
+      <button
+        onClick={async () => {
+          localStorage.clear()
+          sessionStorage.clear()
+          await supabase.auth.signOut()
+          window.location.href = '/'
+        }}
+        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+      >
+        Sair Agora
+      </button>
+    </div>
+  )
+}
 
 export default function Home() {
   const { session, role, loading } = useAuth()
@@ -69,12 +100,6 @@ export default function Home() {
     case 'monitor':
       return <MonitorPanel />
     default:
-      return (
-        <div className="h-screen flex flex-col items-center justify-center">
-          <h1 className="text-xl font-bold text-red-600">Acesso Negado</h1>
-          <p>Seu perfil ({role || 'nenhum'}) não tem permissão para acessar este painel.</p>
-          <button onClick={() => supabase.auth.signOut()} className="mt-4 underline">Sair</button>
-        </div>
-      )
+      return <AccessDenied />
   }
 }
