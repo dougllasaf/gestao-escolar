@@ -140,12 +140,16 @@ export default function Home() {
   }
 
   // Role-based Routing
-  // If role is null but session exists, we're still fetching the profile - show loading with timeout
-  if (session && role === null) {
+  // Use cached role as fallback to avoid showing "Verificando" during normal navigation
+  const cachedRole = typeof window !== 'undefined' ? localStorage.getItem('cached_role') : null
+  const effectiveRole = role || cachedRole // Trust cache if context role is null
+
+  // Only show VerifyingPermissions if we have session but NO role AND NO cached role
+  if (session && !effectiveRole) {
     return <VerifyingPermissions />
   }
 
-  switch (role) {
+  switch (effectiveRole) {
     case 'super_admin':
       return <SuperAdminPanel />
     case 'city_admin':
@@ -153,7 +157,7 @@ export default function Home() {
     case 'monitor':
       return <MonitorPanel />
     default:
-      // Only show AccessDenied if we have a session AND role fetch completed with invalid role
+      // Only show AccessDenied if we have a session AND no valid role
       return <AccessDenied />
   }
 }
