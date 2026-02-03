@@ -35,7 +35,7 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
         setMessage(null)
 
         try {
-            const { error } = await safeRequest(
+            const { error } = await safeRequest<any>(
                 supabase.auth.updateUser({ password: password }),
                 10000,
                 'O servidor demorou muito para responder. Verifique sua conexão.'

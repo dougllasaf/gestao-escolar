@@ -189,7 +189,7 @@ export default function CityAdminPanel() {
             if (vehicleFile) {
                 const fileExt = vehicleFile.name.split('.').pop()
                 const fileName = `vehicle-${Date.now()}.${fileExt}`
-                const { error: upErr } = await safeRequest(
+                const { error: upErr } = await safeRequest<any>(
                     supabase.storage.from('route-documents').upload(fileName, vehicleFile),
                     15000, 'Upload do documento do veículo demorou muito.'
                 )
@@ -201,7 +201,7 @@ export default function CityAdminPanel() {
             if (driverFile) {
                 const fileExt = driverFile.name.split('.').pop()
                 const fileName = `driver-${Date.now()}.${fileExt}`
-                const { error: upErr } = await safeRequest(
+                const { error: upErr } = await safeRequest<any>(
                     supabase.storage.from('route-documents').upload(fileName, driverFile),
                     15000, 'Upload do documento do motorista demorou muito.'
                 )
@@ -210,7 +210,7 @@ export default function CityAdminPanel() {
                 driverDocUrl = publicUrl
             }
 
-            const { error } = await safeRequest(supabase.from('routes').insert({
+            const { error } = await safeRequest<any>(supabase.from('routes').insert({
                 route_number: newRoute.number,
                 driver_name: newRoute.driver,
                 vehicle_type: newRoute.vehicleType,
@@ -233,7 +233,7 @@ export default function CityAdminPanel() {
         setLoading(true)
         try {
             const cityId = await getCityId()
-            const { error } = await safeRequest(supabase.from('schools').insert({ name: newSchool.name, city_id: cityId } as any), 10000)
+            const { error } = await safeRequest<any>(supabase.from('schools').insert({ name: newSchool.name, city_id: cityId } as any), 10000)
 
             if (error) throw error
             setMessage('Escola criada com sucesso!')
@@ -283,7 +283,7 @@ export default function CityAdminPanel() {
             if (newStudent.hasSpecialCondition && medicalReportFile) {
                 const fileExt = medicalReportFile.name.split('.').pop()
                 const fileName = `medical-${Date.now()}.${fileExt}`
-                const { error: upErr } = await safeRequest(
+                const { error: upErr } = await safeRequest<any>(
                     supabase.storage.from('student-documents').upload(fileName, medicalReportFile),
                     15000, 'Upload demorou muito.'
                 )
@@ -292,7 +292,7 @@ export default function CityAdminPanel() {
                 reportUrl = publicUrl
             }
 
-            const { error } = await safeRequest(supabase.from('students').insert({
+            const { error } = await safeRequest<any>(supabase.from('students').insert({
                 full_name: newStudent.fullName,
                 date_of_birth: newStudent.dob,
                 guardian_name: newStudent.guardianName,
@@ -341,7 +341,7 @@ export default function CityAdminPanel() {
             if (editMedicalFile) {
                 const fileExt = editMedicalFile.name.split('.').pop()
                 const fileName = `medical-update-${Date.now()}.${fileExt}`
-                const { error: upErr } = await safeRequest(
+                const { error: upErr } = await safeRequest<any>(
                     supabase.storage.from('student-documents').upload(fileName, editMedicalFile),
                     15000, 'Upload demorou muito.'
                 )
@@ -350,7 +350,7 @@ export default function CityAdminPanel() {
                 reportUrl = publicUrl
             }
 
-            const { error } = await safeRequest((supabase.from('students') as any).update({
+            const { error } = await safeRequest<any>((supabase.from('students') as any).update({
                 full_name: s.full_name,
                 date_of_birth: s.date_of_birth,
                 guardian_name: s.guardian_name,
