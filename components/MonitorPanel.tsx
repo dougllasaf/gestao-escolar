@@ -10,6 +10,7 @@ import { Card } from './ui/Card'
 import { Button } from './ui/Button'
 import { Modal } from './ui/Modal'
 import { Input, Select } from './ui/Forms'
+import { Toast } from './ui/Toast'
 
 export default function MonitorPanel() {
     const { user } = useAuth()
@@ -327,7 +328,7 @@ export default function MonitorPanel() {
             </header>
 
             <main className="max-w-5xl mx-auto px-4 py-8">
-                {message && <div className={`mb-6 p-4 rounded-lg text-sm font-medium ${message.includes('Erro') || message.includes('Error') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>{message}</div>}
+                {message && <Toast message={message} type={message.includes('Erro') || message.includes('Error') ? 'error' : 'success'} onClose={() => setMessage('')} />}
 
                 <div className="grid md:grid-cols-3 gap-8">
                     {/* Add Form - Mobile First (Order 1), Desktop Side (Order 2) */}

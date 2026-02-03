@@ -9,6 +9,7 @@ import { Card } from './ui/Card'
 import { Button } from './ui/Button'
 import { Modal } from './ui/Modal'
 import { Input, Select } from './ui/Forms'
+import { Toast } from './ui/Toast'
 
 export default function SuperAdminPanel() {
     const { user } = useAuth()
@@ -137,7 +138,7 @@ export default function SuperAdminPanel() {
                     </button>
                 </div>
 
-                {message && <div className={`mb-6 p-4 rounded-lg text-sm font-medium ${message.includes('Erro') ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>{message}</div>}
+                {message && <Toast message={message} type={message.includes('Erro') ? 'error' : 'success'} onClose={() => setMessage('')} />}
 
                 <div className="grid md:grid-cols-3 gap-8">
 

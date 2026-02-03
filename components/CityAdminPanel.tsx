@@ -11,6 +11,7 @@ import { Card } from './ui/Card'
 import { Button } from './ui/Button'
 import { Modal } from './ui/Modal'
 import { Input, Select } from './ui/Forms'
+import { Toast } from './ui/Toast'
 
 export default function CityAdminPanel() {
     const { user } = useAuth()
@@ -545,13 +546,11 @@ export default function CityAdminPanel() {
 
                 {/* Notifications */}
                 {message && (
-                    <div className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${message.toLowerCase().includes('error') || message.toLowerCase().includes('erro')
-                        ? 'bg-red-50 text-red-700 border border-red-100'
-                        : 'bg-green-50 text-green-700 border border-green-100'
-                        }`}>
-                        <AlertCircle size={20} />
-                        {message}
-                    </div>
+                    <Toast
+                        message={message}
+                        type={message.toLowerCase().includes('error') || message.toLowerCase().includes('erro') ? 'error' : 'success'}
+                        onClose={() => setMessage('')}
+                    />
                 )}
 
                 {/* ROUTES TAB */}
