@@ -70,6 +70,7 @@ export default function CityAdminPanel() {
     const [medicalReportFile, setMedicalReportFile] = useState<File | null>(null)
 
     const [loading, setLoading] = useState(false)
+    const [initialDataLoaded, setInitialDataLoaded] = useState(false) // For instant F5 UX
     const [message, setMessage] = useState('')
 
     // Import Modal State
@@ -100,6 +101,7 @@ export default function CityAdminPanel() {
     const fetchRoutes = async () => {
         const { data } = await supabase.from('routes').select('*').order('route_number')
         if (data) setRoutes(data)
+        setInitialDataLoaded(true) // Mark initial load complete
     }
 
     const fetchSchools = async () => {
@@ -589,7 +591,13 @@ export default function CityAdminPanel() {
                                     </div>
                                 </Card>
                             ))}
-                            {filteredRoutes.length === 0 && <div className="text-center py-10 text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">Nenhuma rota encontrada.</div>}
+                            {!initialDataLoaded && (
+                                <div className="text-center py-10 text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                                    Carregando rotas...
+                                </div>
+                            )}
+                            {initialDataLoaded && filteredRoutes.length === 0 && <div className="text-center py-10 text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">Nenhuma rota encontrada.</div>}
                         </div>
 
                         {/* Create Form - Desktop Order: 2, Mobile Order: 1 (First) */}
