@@ -19,16 +19,22 @@ const AuthContext = createContext<AuthContextType>({
 })
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+    // Read cached role from localStorage IMMEDIATELY (synchronous - makes F5 instant)
+    const getCachedRole = (): string | null => {
+        if (typeof window === 'undefined') return null
+        return localStorage.getItem('cached_role')
+    }
+
     const [session, setSession] = useState<Session | null>(null)
     const [user, setUser] = useState<User | null>(null)
-    const [role, setRole] = useState<string | null>(null)
-    const [loading, setLoading] = useState(true)
+    const [role, setRole] = useState<string | null>(getCachedRole()) // Start with cached role
+    const [loading, setLoading] = useState(!getCachedRole()) // If we have cached role, don't show loading
 
     useEffect(() => {
         // Helper to fetch role with timeout
         const fetchRoleWithTimeout = async (userId: string): Promise<string | null> => {
             const timeoutPromise = new Promise<null>((resolve) => {
-                setTimeout(() => resolve(null), 5000) // 5s timeout
+                setTimeout(() => resolve(null), 5000)
             })
 
             const fetchPromise = (async () => {
@@ -47,7 +53,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             return Promise.race([fetchPromise, timeoutPromise])
         }
 
-        // Initial fetch
+        // Save role to cache
+        const cacheRole = (r: string | null) => {
+            if (r) {
+                localStorage.setItem('cached_role', r)
+            } else {
+                localStorage.removeItem('cached_role')
+            }
+        }
+
+        // Initial fetch (verifies cached role in background)
         const fetchSession = async () => {
             try {
                 const { data: { session } } = await supabase.auth.getSession()
@@ -57,6 +72,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 if (session?.user) {
                     const fetchedRole = await fetchRoleWithTimeout(session.user.id)
                     setRole(fetchedRole)
+                    cacheRole(fetchedRole)
+                } else {
+                    // No session - clear cache
+                    setRole(null)
+                    cacheRole(null)
                 }
             } catch (err) {
                 console.error('Session fetch error:', err)
@@ -64,7 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setLoading(false)
         }
 
-        // Safety Timeout (5s max load) to prevent White Screen of Death
+        // Safety Timeout
         const timer = setTimeout(() => {
             setLoading(false)
         }, 5000)
@@ -79,8 +99,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (session?.user) {
                 const fetchedRole = await fetchRoleWithTimeout(session.user.id)
                 setRole(fetchedRole)
+                cacheRole(fetchedRole)
             } else {
                 setRole(null)
+                cacheRole(null)
             }
             setLoading(false)
         })
@@ -93,7 +115,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return (
         <AuthContext.Provider value={{ session, user, role, loading }}>
-            {loading ? <div className="h-screen w-screen flex items-center justify-center bg-gray-50 text-blue-600 font-bold">Carregando...</div> : children}
+            {children}
         </AuthContext.Provider>
     )
 }
