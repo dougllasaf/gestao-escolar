@@ -11,6 +11,10 @@ export function UserMenu() {
     const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
 
     const handleLogout = async () => {
+        // Force clear strict Local Storage/Session to prevent stuck sessions
+        localStorage.clear()
+        sessionStorage.clear()
+
         await supabase.auth.signOut()
         window.location.href = '/'
     }

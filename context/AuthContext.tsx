@@ -42,6 +42,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setLoading(false)
         }
 
+        // Safety Timeout (3s max load) to prevent White Screen of Death
+        const timer = setTimeout(() => {
+            setLoading(false)
+        }, 3000)
+
         fetchSession()
 
         // Subscription
@@ -62,12 +67,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setLoading(false)
         })
 
-        return () => subscription.unsubscribe()
+        return () => {
+            subscription.unsubscribe()
+            clearTimeout(timer)
+        }
     }, [])
 
     return (
         <AuthContext.Provider value={{ session, user, role, loading }}>
-            {!loading && children}
+            {loading ? <div className="h-screen w-screen flex items-center justify-center bg-gray-50 text-blue-600 font-bold">Carregando...</div> : children}
         </AuthContext.Provider>
     )
 }
