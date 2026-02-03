@@ -114,7 +114,7 @@ export default function MonitorPanel() {
             if (newStudent.hasSpecialCondition && medicalReportFile) {
                 const fileExt = medicalReportFile.name.split('.').pop()
                 const fileName = `medical-${Date.now()}.${fileExt}`
-                const { error: upErr } = await safeRequest(
+                const { error: upErr } = await safeRequest<any>(
                     supabase.storage.from('student-documents').upload(fileName, medicalReportFile),
                     15000, 'Upload demorou muito.'
                 )
@@ -123,7 +123,7 @@ export default function MonitorPanel() {
                 reportUrl = publicUrl
             }
 
-            const { error } = await safeRequest(supabase.from('students').insert({
+            const { error } = await safeRequest<any>(supabase.from('students').insert({
                 full_name: newStudent.fullName,
                 date_of_birth: newStudent.dob,
                 guardian_name: newStudent.guardianName,
@@ -132,18 +132,13 @@ export default function MonitorPanel() {
                 shift: newStudent.shift,
                 grade: newStudent.grade,
                 school_id: newStudent.schoolId,
-                route_id: user?.id, // Monitor IS the route owner (or linked via profile logic, simpler here as we rely on RLS/Backend trigger or context if needed, but MonitorPanel usually implies user.id is route-linked) 
-                // Wait, MonitorPanel.tsx logic usually gets route from somewhere else or user profile? 
-                // Looking at original code... it was just inserting.
-                // Re-reading original snippet: 
-                // 113:             const { error } = await supabase.from('students').insert({
-                // It inserts. RLS handles the default values or the backend.
+                route_id: user?.id,
                 school_year: selectedYear,
                 created_by: user?.id,
                 has_special_condition: newStudent.hasSpecialCondition,
                 special_condition_details: newStudent.specialConditionDetails,
                 medical_report_url: reportUrl
-            }), 10000)
+            } as any), 10000)
 
 
             if (error) throw error
