@@ -1,5 +1,5 @@
 {
-  "name": "temp_app",
+  "name": "gestao-transporte-escolar",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -16,8 +16,6 @@
     "dotenv": "^17.2.3",
     "lucide-react": "^0.563.0",
     "next": "16.1.6",
-    "pg": "^8.18.0",
-    "postgres": "^3.4.8",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "tailwind-merge": "^3.4.0",

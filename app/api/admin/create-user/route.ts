@@ -40,7 +40,7 @@ export async function POST(request: Request) {
         const { data: { session } } = await supabase.auth.getSession()
 
         if (!session) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+            return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
         }
 
         // 2. Access control check
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
             .single() as any
 
         if (!callerProfile) {
-            return NextResponse.json({ error: 'Profile not found' }, { status: 403 })
+            return NextResponse.json({ error: 'Perfil não encontrado' }, { status: 403 })
         }
 
         const { email, password, role, city_id, full_name, route_id } = await request.json()
@@ -62,14 +62,14 @@ export async function POST(request: Request) {
         if (callerProfile.role === 'city_admin') {
             // City Admin can ONLY create Monitors for THEIR city
             if (role !== 'monitor') {
-                return NextResponse.json({ error: 'City Admin can only create Monitors' }, { status: 403 })
+                return NextResponse.json({ error: 'Administrador Municipal só pode criar Monitores' }, { status: 403 })
             }
             if (city_id !== callerProfile.city_id) {
-                return NextResponse.json({ error: 'Cannot create user for another city' }, { status: 403 })
+                return NextResponse.json({ error: 'Não é possível criar usuário para outra cidade' }, { status: 403 })
             }
             // @ts-ignore
         } else if (callerProfile.role !== 'super_admin') {
-            return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
+            return NextResponse.json({ error: 'Permissões insuficientes' }, { status: 403 })
         }
 
         // 4. Create User (Requires Service Role)
