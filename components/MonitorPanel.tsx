@@ -282,7 +282,7 @@ export default function MonitorPanel() {
     }
 
     if (!myRoute) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center bg-white">
             <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
                 <p className="text-gray-500">Carregando rota...</p>
@@ -295,7 +295,7 @@ export default function MonitorPanel() {
 
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20">
+        <div className="min-h-screen bg-white pb-20">
             <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
                 <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
