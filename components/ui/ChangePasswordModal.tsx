@@ -74,14 +74,23 @@ export function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProp
                     </div>
                     <div className="text-center">
                         <h3 className="text-xl font-bold text-gray-800">Sucesso!</h3>
-                        <p className="text-gray-600">Sua senha foi atualizada com sucesso.</p>
+                        <p className="text-gray-600">Sua senha foi atualizada.</p>
+                        <p className="text-sm text-gray-500 mt-2">Você será desconectado para aplicar a mudança...</p>
                     </div>
                     <Button onClick={() => {
-                        onClose()
-                        setIsSuccess(false)
-                        setPassword('')
-                        setConfirmPassword('')
-                    }} className="w-full bg-green-600 hover:bg-green-700">Fechar</Button>
+                        // Force logout and redirect
+                        localStorage.clear()
+                        sessionStorage.clear()
+                        const cookies = document.cookie.split(";")
+                        for (let i = 0; i < cookies.length; i++) {
+                            const cookie = cookies[i]
+                            const eqPos = cookie.indexOf("=")
+                            const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie
+                            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/"
+                        }
+                        supabase.auth.signOut().catch(console.error)
+                        window.location.href = '/'
+                    }} className="w-full bg-green-600 hover:bg-green-700">Sair e Fazer Login</Button>
                 </div>
             ) : (
                 <form onSubmit={handleUpdatePassword} className="space-y-4 py-2">
