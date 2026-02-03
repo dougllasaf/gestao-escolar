@@ -261,7 +261,8 @@ export default function CityAdminPanel() {
                     route_id: newMonitor.routeId
                 })
             })
-            if (!res.ok) throw new Error((await res.json()).error)
+            const data = await res.json().catch(() => ({ error: 'Erro inesperado no servidor' }))
+            if (!res.ok) throw new Error(data.error || 'Erro ao criar monitor')
             setMessage('Monitor criado com sucesso!')
             setNewMonitor({ fullName: '', email: '', password: '', routeId: '' })
             fetchMonitors()

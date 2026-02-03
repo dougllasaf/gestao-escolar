@@ -132,7 +132,8 @@ export default function MonitorPanel() {
                 shift: newStudent.shift,
                 grade: newStudent.grade,
                 school_id: newStudent.schoolId,
-                route_id: user?.id,
+                route_id: myRoute?.id, // Fixed: use route ID, not user ID
+                city_id: myRoute?.city_id, // Fixed: add required city_id
                 school_year: selectedYear,
                 created_by: user?.id,
                 has_special_condition: newStudent.hasSpecialCondition,
