@@ -1,6 +1,6 @@
 export const safeRequest = async <T>(
     promise: PromiseLike<T>,
-    timeout = 10000,
+    timeout = 30000,
     errorMessage = 'A solicitação excedeu o tempo limite. Tente novamente.'
 ): Promise<T> => {
     let timeoutHandle: NodeJS.Timeout

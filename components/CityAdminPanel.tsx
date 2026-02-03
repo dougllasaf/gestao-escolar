@@ -218,7 +218,7 @@ export default function CityAdminPanel() {
                 max_capacity: newRoute.maxCapacity ? parseInt(newRoute.maxCapacity) : null,
                 vehicle_document_url: vehicleDocUrl, driver_document_url: driverDocUrl,
                 city_id: cityId
-            } as any), 10000)
+            } as any), 30000)
 
             if (error) throw error
             setMessage('Rota criada com sucesso!')
@@ -233,7 +233,7 @@ export default function CityAdminPanel() {
         setLoading(true)
         try {
             const cityId = await getCityId()
-            const { error } = await safeRequest<any>(supabase.from('schools').insert({ name: newSchool.name, city_id: cityId } as any), 10000)
+            const { error } = await safeRequest<any>(supabase.from('schools').insert({ name: newSchool.name, city_id: cityId } as any), 30000)
 
             if (error) throw error
             setMessage('Escola criada com sucesso!')
@@ -308,7 +308,7 @@ export default function CityAdminPanel() {
                 city_id: selectedRoute.city_id,
                 school_year: selectedYear, // Insert with SELECTED YEAR
                 created_by: user?.id
-            } as any), 10000)
+            } as any), 30000)
 
             if (error) throw error
             setMessage(`Aluno adicionado para o Ano Letivo ${selectedYear}!`)
@@ -363,7 +363,7 @@ export default function CityAdminPanel() {
                 special_condition_details: s.special_condition_details,
                 medical_report_url: reportUrl,
                 route_id: s.route_id
-            }).eq('id', s.id), 10000)
+            }).eq('id', s.id), 30000)
 
             if (error) throw error
             setMessage('Aluno atualizado com sucesso!')

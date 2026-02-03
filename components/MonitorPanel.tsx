@@ -138,7 +138,7 @@ export default function MonitorPanel() {
                 has_special_condition: newStudent.hasSpecialCondition,
                 special_condition_details: newStudent.specialConditionDetails,
                 medical_report_url: reportUrl
-            } as any), 10000)
+            } as any), 30000)
 
 
             if (error) throw error
