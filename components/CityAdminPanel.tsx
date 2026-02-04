@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuth } from '@/context/AuthContext'
-import { Plus, Users, Map, School, LogOut, Trash, ArrowLeft, Bus, AlertCircle, FileText, Upload, User, Search, GraduationCap, Filter, Calendar, Edit, CheckCircle, X, MapPin } from 'lucide-react'
+import { Plus, Users, Map, School, LogOut, Trash, ArrowLeft, Bus, AlertCircle, FileText, Upload, User, Search, GraduationCap, Filter, Calendar, Edit, CheckCircle, X, MapPin, Phone } from 'lucide-react'
 import { safeRequest } from '@/utils/asyncUtils'
 import { UserMenu } from './ui/UserMenu'
 
@@ -44,7 +44,7 @@ export default function CityAdminPanel() {
     const [missingFileModal, setMissingFileModal] = useState(false)
 
     // Form State
-    const [newMonitor, setNewMonitor] = useState({ fullName: '', email: '', password: '', routeId: '' })
+    const [newMonitor, setNewMonitor] = useState({ fullName: '', email: '', password: '', routeId: '', phone: '' })
     const [newSchool, setNewSchool] = useState({ name: '' })
 
     // Enhanced Route Form State
@@ -262,13 +262,14 @@ export default function CityAdminPanel() {
                     full_name: newMonitor.fullName,
                     role: 'monitor',
                     city_id: cityId,
-                    route_id: newMonitor.routeId
+                    route_id: newMonitor.routeId,
+                    phone: newMonitor.phone
                 })
             })
             const data = await res.json().catch(() => ({ error: 'Erro inesperado no servidor' }))
             if (!res.ok) throw new Error(data.error || 'Erro ao criar monitor')
             setMessage('Monitor criado com sucesso!')
-            setNewMonitor({ fullName: '', email: '', password: '', routeId: '' })
+            setNewMonitor({ fullName: '', email: '', password: '', routeId: '', phone: '' })
             fetchMonitors()
         } catch (err: any) { setMessage(err.message) } finally { setLoading(false) }
     }
@@ -449,7 +450,8 @@ export default function CityAdminPanel() {
             const m = editMonitorModal.monitor
             const { error } = await safeRequest<any>((supabase.from('user_profiles') as any).update({
                 full_name: m.full_name,
-                assigned_route_id: m.assigned_route_id || null
+                assigned_route_id: m.assigned_route_id || null,
+                phone: m.phone || null
             }).eq('id', m.id), 30000)
 
             if (error) throw error
@@ -653,6 +655,11 @@ export default function CityAdminPanel() {
                                                 <span className="text-gray-300">|</span>
                                                 <Bus size={14} /> {r.vehicle_plate || 'Sem Placa'}
                                             </p>
+                                            {monitors.find(m => m.assigned_route_id === r.id) && (
+                                                <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                                                    <Users size={12} /> Monitor: {monitors.find(m => m.assigned_route_id === r.id)?.full_name}
+                                                </p>
+                                            )}
                                         </div>
                                         <div className="flex">
                                             <Button
@@ -889,6 +896,7 @@ export default function CityAdminPanel() {
                                     <div>
                                         <h3 className="font-bold text-gray-900">{m.full_name}</h3>
                                         <p className="text-sm text-gray-500">{m.email}</p>
+                                        {m.phone && <p className="text-sm text-gray-500 flex items-center gap-1"><Phone size={12} /> {m.phone}</p>}
                                         <div className="mt-1 inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
                                             <Map size={12} />
                                             {routes.find(r => r.id === m.assigned_route_id)?.route_number || 'Sem Rota'}
@@ -907,6 +915,7 @@ export default function CityAdminPanel() {
                                 <form onSubmit={handleCreateMonitor} className="space-y-4">
                                     <Input label="Nome Completo" value={newMonitor.fullName} onChange={e => setNewMonitor({ ...newMonitor, fullName: e.target.value })} required />
                                     <Input label="E-mail" type="email" value={newMonitor.email} onChange={e => setNewMonitor({ ...newMonitor, email: e.target.value })} required />
+                                    <Input label="Telefone" type="tel" placeholder="(00) 00000-0000" value={newMonitor.phone} onChange={e => setNewMonitor({ ...newMonitor, phone: e.target.value })} />
                                     <Input label="Senha" type="password" value={newMonitor.password} onChange={e => setNewMonitor({ ...newMonitor, password: e.target.value })} required />
                                     <Select label="Atribuir Rota" value={newMonitor.routeId} onChange={e => setNewMonitor({ ...newMonitor, routeId: e.target.value })} required>
                                         <option value="">Selecione a Rota...</option>
@@ -1285,6 +1294,7 @@ export default function CityAdminPanel() {
                     <form onSubmit={executeEditMonitor} className="space-y-4">
                         <Input label="Nome Completo" value={editMonitorModal.monitor.full_name || ''} onChange={e => setEditMonitorModal({ ...editMonitorModal, monitor: { ...editMonitorModal.monitor, full_name: e.target.value } })} required />
                         <p className="text-sm text-gray-500">E-mail: {editMonitorModal.monitor.email}</p>
+                        <Input label="Telefone" type="tel" placeholder="(00) 00000-0000" value={editMonitorModal.monitor.phone || ''} onChange={e => setEditMonitorModal({ ...editMonitorModal, monitor: { ...editMonitorModal.monitor, phone: e.target.value } })} />
                         <Select label="Rota Atribuída" value={editMonitorModal.monitor.assigned_route_id || ''} onChange={e => setEditMonitorModal({ ...editMonitorModal, monitor: { ...editMonitorModal.monitor, assigned_route_id: e.target.value } })}>
                             <option value="">Sem Rota</option>
                             {routes.map(r => <option key={r.id} value={r.id}>{r.route_number} - {r.driver_name}</option>)}

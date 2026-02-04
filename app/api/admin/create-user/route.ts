@@ -55,7 +55,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Perfil não encontrado' }, { status: 403 })
         }
 
-        const { email, password, role, city_id, full_name, route_id } = await request.json()
+        const { email, password, role, city_id, full_name, route_id, phone } = await request.json()
 
         // 3. Authorization Logic
         // @ts-ignore
@@ -101,7 +101,8 @@ export async function POST(request: Request) {
             role: role as 'monitor' | 'city_admin' | 'super_admin',
             city_id: city_id,
             full_name: full_name,
-            assigned_route_id: route_id || null
+            assigned_route_id: route_id || null,
+            phone: phone || null
         }
 
         const { error: profileError } = await supabaseAdmin
