@@ -13,6 +13,20 @@ import { Modal } from './ui/Modal'
 import { Input, Select } from './ui/Forms'
 import { Toast } from './ui/Toast'
 
+// Mask utilities
+const maskPhone = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 11)
+    if (digits.length <= 2) return `(${digits}`
+    if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
+}
+
+const maskPlate = (value: string) => {
+    const clean = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 7)
+    if (clean.length <= 3) return clean
+    return `${clean.slice(0, 3)}-${clean.slice(3)}`
+}
+
 export default function CityAdminPanel() {
     const { user } = useAuth()
     const currentYear = new Date().getFullYear()
@@ -751,7 +765,7 @@ export default function CityAdminPanel() {
                                             <option value="Ônibus">Ônibus</option>
                                             <option value="Kombi">Kombi</option>
                                         </Select>
-                                        <Input label="Placa" placeholder="ABC-1234" value={newRoute.plate} onChange={e => setNewRoute({ ...newRoute, plate: e.target.value })} required />
+                                        <Input label="Placa" placeholder="ABC-1234" value={newRoute.plate} onChange={e => setNewRoute({ ...newRoute, plate: maskPlate(e.target.value) })} required />
                                     </div>
 
                                     <div className="space-y-2">
@@ -857,7 +871,7 @@ export default function CityAdminPanel() {
 
                                         <div className="grid grid-cols-2 gap-3">
                                             <Input label="Responsável" value={newStudent.guardianName} onChange={e => setNewStudent({ ...newStudent, guardianName: e.target.value })} />
-                                            <Input label="Telefone" value={newStudent.guardianPhone} onChange={e => setNewStudent({ ...newStudent, guardianPhone: e.target.value })} />
+                                            <Input label="Telefone" placeholder="(00) 00000-0000" value={newStudent.guardianPhone} onChange={e => setNewStudent({ ...newStudent, guardianPhone: maskPhone(e.target.value) })} />
                                         </div>
 
                                         <Input label="Endereço" value={newStudent.address} onChange={e => setNewStudent({ ...newStudent, address: e.target.value })} />
@@ -965,7 +979,7 @@ export default function CityAdminPanel() {
                                 <form onSubmit={handleCreateMonitor} className="space-y-4">
                                     <Input label="Nome Completo" value={newMonitor.fullName} onChange={e => setNewMonitor({ ...newMonitor, fullName: e.target.value })} required />
                                     <Input label="E-mail" type="email" value={newMonitor.email} onChange={e => setNewMonitor({ ...newMonitor, email: e.target.value })} required />
-                                    <Input label="Telefone" type="tel" placeholder="(00) 00000-0000" value={newMonitor.phone} onChange={e => setNewMonitor({ ...newMonitor, phone: e.target.value })} />
+                                    <Input label="Telefone" type="tel" placeholder="(00) 00000-0000" value={newMonitor.phone} onChange={e => setNewMonitor({ ...newMonitor, phone: maskPhone(e.target.value) })} />
                                     <Input label="Senha" type="password" value={newMonitor.password} onChange={e => setNewMonitor({ ...newMonitor, password: e.target.value })} required />
                                     <Select label="Atribuir Rota" value={newMonitor.routeId} onChange={e => setNewMonitor({ ...newMonitor, routeId: e.target.value })} required>
                                         <option value="">Selecione a Rota...</option>
@@ -1231,7 +1245,7 @@ export default function CityAdminPanel() {
 
                         <div className="grid grid-cols-2 gap-3">
                             <Input label="Responsável" value={editStudentModal.student.guardian_name || ''} onChange={e => setEditStudentModal({ ...editStudentModal, student: { ...editStudentModal.student, guardian_name: e.target.value } })} />
-                            <Input label="Telefone" value={editStudentModal.student.guardian_phone || ''} onChange={e => setEditStudentModal({ ...editStudentModal, student: { ...editStudentModal.student, guardian_phone: e.target.value } })} />
+                            <Input label="Telefone" placeholder="(00) 00000-0000" value={editStudentModal.student.guardian_phone || ''} onChange={e => setEditStudentModal({ ...editStudentModal, student: { ...editStudentModal.student, guardian_phone: maskPhone(e.target.value) } })} />
                         </div>
 
                         <Input label="Endereço" value={editStudentModal.student.address || ''} onChange={e => setEditStudentModal({ ...editStudentModal, student: { ...editStudentModal.student, address: e.target.value } })} />
@@ -1307,7 +1321,7 @@ export default function CityAdminPanel() {
                             <option value="Ônibus">Ônibus</option>
                             <option value="Van">Van</option>
                         </Select>
-                        <Input label="Placa do Veículo" value={editRouteModal.route.vehicle_plate || ''} onChange={e => setEditRouteModal({ ...editRouteModal, route: { ...editRouteModal.route, vehicle_plate: e.target.value } })} />
+                        <Input label="Placa do Veículo" placeholder="ABC-1234" value={editRouteModal.route.vehicle_plate || ''} onChange={e => setEditRouteModal({ ...editRouteModal, route: { ...editRouteModal.route, vehicle_plate: maskPlate(e.target.value) } })} />
                         <Input label="Capacidade Máxima" type="number" value={editRouteModal.route.max_capacity || ''} onChange={e => setEditRouteModal({ ...editRouteModal, route: { ...editRouteModal.route, max_capacity: e.target.value } })} />
 
                         {/* Document Upload Section */}
@@ -1372,7 +1386,7 @@ export default function CityAdminPanel() {
                     <form onSubmit={executeEditMonitor} className="space-y-4">
                         <Input label="Nome Completo" value={editMonitorModal.monitor.full_name || ''} onChange={e => setEditMonitorModal({ ...editMonitorModal, monitor: { ...editMonitorModal.monitor, full_name: e.target.value } })} required />
                         <p className="text-sm text-gray-500">E-mail: {editMonitorModal.monitor.email}</p>
-                        <Input label="Telefone" type="tel" placeholder="(00) 00000-0000" value={editMonitorModal.monitor.phone || ''} onChange={e => setEditMonitorModal({ ...editMonitorModal, monitor: { ...editMonitorModal.monitor, phone: e.target.value } })} />
+                        <Input label="Telefone" type="tel" placeholder="(00) 00000-0000" value={editMonitorModal.monitor.phone || ''} onChange={e => setEditMonitorModal({ ...editMonitorModal, monitor: { ...editMonitorModal.monitor, phone: maskPhone(e.target.value) } })} />
                         <Select label="Rota Atribuída" value={editMonitorModal.monitor.assigned_route_id || ''} onChange={e => setEditMonitorModal({ ...editMonitorModal, monitor: { ...editMonitorModal.monitor, assigned_route_id: e.target.value } })}>
                             <option value="">Sem Rota</option>
                             {routes.map(r => <option key={r.id} value={r.id}>{r.route_number} - {r.driver_name}</option>)}
