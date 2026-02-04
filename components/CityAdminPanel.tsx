@@ -57,6 +57,9 @@ export default function CityAdminPanel() {
     })
     const [vehicleFile, setVehicleFile] = useState<File | null>(null)
     const [driverFile, setDriverFile] = useState<File | null>(null)
+    // Edit Route Files
+    const [editVehicleFile, setEditVehicleFile] = useState<File | null>(null)
+    const [editDriverFile, setEditDriverFile] = useState<File | null>(null)
 
     // Enhanced Student Form State
     const [newStudent, setNewStudent] = useState({
@@ -400,17 +403,50 @@ export default function CityAdminPanel() {
 
         try {
             const r = editRouteModal.route
+            let vehicleDocUrl = r.vehicle_document_url
+            let driverDocUrl = r.driver_document_url
+
+            // Upload new vehicle document if provided
+            if (editVehicleFile) {
+                const fileExt = editVehicleFile.name.split('.').pop()
+                const fileName = `vehicle-${Date.now()}.${fileExt}`
+                const { error: upErr } = await safeRequest<any>(
+                    supabase.storage.from('route-documents').upload(fileName, editVehicleFile),
+                    15000, 'Upload do documento do veículo demorou muito.'
+                )
+                if (upErr) throw upErr
+                const { data: { publicUrl } } = supabase.storage.from('route-documents').getPublicUrl(fileName)
+                vehicleDocUrl = publicUrl
+            }
+
+            // Upload new driver document if provided
+            if (editDriverFile) {
+                const fileExt = editDriverFile.name.split('.').pop()
+                const fileName = `driver-${Date.now()}.${fileExt}`
+                const { error: upErr } = await safeRequest<any>(
+                    supabase.storage.from('route-documents').upload(fileName, editDriverFile),
+                    15000, 'Upload do documento do motorista demorou muito.'
+                )
+                if (upErr) throw upErr
+                const { data: { publicUrl } } = supabase.storage.from('route-documents').getPublicUrl(fileName)
+                driverDocUrl = publicUrl
+            }
+
             const { error } = await safeRequest<any>((supabase.from('routes') as any).update({
                 route_number: r.route_number,
                 driver_name: r.driver_name,
                 vehicle_type: r.vehicle_type,
                 vehicle_plate: r.vehicle_plate,
-                max_capacity: r.max_capacity ? parseInt(r.max_capacity) : null
+                max_capacity: r.max_capacity ? parseInt(r.max_capacity) : null,
+                vehicle_document_url: vehicleDocUrl,
+                driver_document_url: driverDocUrl
             }).eq('id', r.id), 30000)
 
             if (error) throw error
             setMessage('Rota atualizada com sucesso!')
             setEditRouteModal(null)
+            setEditVehicleFile(null)
+            setEditDriverFile(null)
             fetchRoutes()
         } catch (err: any) {
             setMessage('Erro ao atualizar: ' + err.message)
@@ -659,6 +695,20 @@ export default function CityAdminPanel() {
                                                 <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
                                                     <Users size={12} /> Monitor: {monitors.find(m => m.assigned_route_id === r.id)?.full_name}
                                                 </p>
+                                            )}
+                                            {(r.vehicle_document_url || r.driver_document_url) && (
+                                                <div className="flex gap-3 mt-2">
+                                                    {r.driver_document_url && (
+                                                        <a href={r.driver_document_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 underline">
+                                                            <FileText size={12} /> CNH
+                                                        </a>
+                                                    )}
+                                                    {r.vehicle_document_url && (
+                                                        <a href={r.vehicle_document_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 underline">
+                                                            <FileText size={12} /> Doc. Veículo
+                                                        </a>
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
                                         <div className="flex">
@@ -1245,10 +1295,10 @@ export default function CityAdminPanel() {
             {editRouteModal && (
                 <Modal
                     isOpen={true}
-                    onClose={() => setEditRouteModal(null)}
+                    onClose={() => { setEditRouteModal(null); setEditVehicleFile(null); setEditDriverFile(null) }}
                     title="Editar Rota"
                 >
-                    <form onSubmit={executeEditRoute} className="space-y-4">
+                    <form onSubmit={executeEditRoute} className="space-y-4 max-h-[70vh] overflow-y-auto px-1">
                         <Input label="Número da Rota" value={editRouteModal.route.route_number || ''} onChange={e => setEditRouteModal({ ...editRouteModal, route: { ...editRouteModal.route, route_number: e.target.value } })} required />
                         <Input label="Nome do Motorista" value={editRouteModal.route.driver_name || ''} onChange={e => setEditRouteModal({ ...editRouteModal, route: { ...editRouteModal.route, driver_name: e.target.value } })} required />
                         <Select label="Tipo de Veículo" value={editRouteModal.route.vehicle_type || ''} onChange={e => setEditRouteModal({ ...editRouteModal, route: { ...editRouteModal.route, vehicle_type: e.target.value } })}>
@@ -1259,8 +1309,36 @@ export default function CityAdminPanel() {
                         </Select>
                         <Input label="Placa do Veículo" value={editRouteModal.route.vehicle_plate || ''} onChange={e => setEditRouteModal({ ...editRouteModal, route: { ...editRouteModal.route, vehicle_plate: e.target.value } })} />
                         <Input label="Capacidade Máxima" type="number" value={editRouteModal.route.max_capacity || ''} onChange={e => setEditRouteModal({ ...editRouteModal, route: { ...editRouteModal.route, max_capacity: e.target.value } })} />
+
+                        {/* Document Upload Section */}
+                        <div className="border-t pt-4 mt-4">
+                            <h4 className="text-sm font-semibold text-gray-700 mb-3">Documentos</h4>
+
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="text-xs font-medium text-gray-600 block mb-1">Doc. Veículo (PDF/IMG)</label>
+                                    {editRouteModal.route.vehicle_document_url && (
+                                        <a href={editRouteModal.route.vehicle_document_url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 underline mb-1 block flex items-center gap-1">
+                                            <FileText size={12} /> Ver documento atual
+                                        </a>
+                                    )}
+                                    <Input type="file" accept=".pdf,.jpg,.jpeg,.png" className="text-xs" onChange={e => setEditVehicleFile(e.target.files ? e.target.files[0] : null)} />
+                                </div>
+
+                                <div>
+                                    <label className="text-xs font-medium text-gray-600 block mb-1">CNH Motorista (PDF/IMG)</label>
+                                    {editRouteModal.route.driver_document_url && (
+                                        <a href={editRouteModal.route.driver_document_url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 underline mb-1 block flex items-center gap-1">
+                                            <FileText size={12} /> Ver CNH atual
+                                        </a>
+                                    )}
+                                    <Input type="file" accept=".pdf,.jpg,.jpeg,.png" className="text-xs" onChange={e => setEditDriverFile(e.target.files ? e.target.files[0] : null)} />
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="flex gap-2 pt-2">
-                            <Button type="button" variant="ghost" onClick={() => setEditRouteModal(null)} className="flex-1">Cancelar</Button>
+                            <Button type="button" variant="ghost" onClick={() => { setEditRouteModal(null); setEditVehicleFile(null); setEditDriverFile(null) }} className="flex-1">Cancelar</Button>
                             <Button type="submit" isLoading={loading} className="flex-1">Salvar Alterações</Button>
                         </div>
                     </form>
