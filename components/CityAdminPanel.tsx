@@ -37,6 +37,9 @@ export default function CityAdminPanel() {
     // Modal State
     const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean, type: 'route' | 'school' | 'monitor' | 'student', id: string, name: string } | null>(null)
     const [editStudentModal, setEditStudentModal] = useState<{ isOpen: boolean, student: any } | null>(null)
+    const [editRouteModal, setEditRouteModal] = useState<{ isOpen: boolean, route: any } | null>(null)
+    const [editSchoolModal, setEditSchoolModal] = useState<{ isOpen: boolean, school: any } | null>(null)
+    const [editMonitorModal, setEditMonitorModal] = useState<{ isOpen: boolean, monitor: any } | null>(null)
     const [editMedicalFile, setEditMedicalFile] = useState<File | null>(null)
     const [missingFileModal, setMissingFileModal] = useState(false)
 
@@ -388,6 +391,78 @@ export default function CityAdminPanel() {
         setMessage('')
     }
 
+    // --- Edit Handlers for Routes, Schools, Monitors ---
+    const executeEditRoute = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!editRouteModal) return
+        setLoading(true)
+
+        try {
+            const r = editRouteModal.route
+            const { error } = await safeRequest<any>((supabase.from('routes') as any).update({
+                route_number: r.route_number,
+                driver_name: r.driver_name,
+                vehicle_type: r.vehicle_type,
+                vehicle_plate: r.vehicle_plate,
+                max_capacity: r.max_capacity ? parseInt(r.max_capacity) : null
+            }).eq('id', r.id), 30000)
+
+            if (error) throw error
+            setMessage('Rota atualizada com sucesso!')
+            setEditRouteModal(null)
+            fetchRoutes()
+        } catch (err: any) {
+            setMessage('Erro ao atualizar: ' + err.message)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const executeEditSchool = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!editSchoolModal) return
+        setLoading(true)
+
+        try {
+            const s = editSchoolModal.school
+            const { error } = await safeRequest<any>((supabase.from('schools') as any).update({
+                name: s.name
+            }).eq('id', s.id), 30000)
+
+            if (error) throw error
+            setMessage('Escola atualizada com sucesso!')
+            setEditSchoolModal(null)
+            fetchSchools()
+        } catch (err: any) {
+            setMessage('Erro ao atualizar: ' + err.message)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const executeEditMonitor = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!editMonitorModal) return
+        setLoading(true)
+
+        try {
+            const m = editMonitorModal.monitor
+            const { error } = await safeRequest<any>((supabase.from('user_profiles') as any).update({
+                full_name: m.full_name,
+                assigned_route_id: m.assigned_route_id || null
+            }).eq('id', m.id), 30000)
+
+            if (error) throw error
+            setMessage('Monitor atualizado com sucesso!')
+            setEditMonitorModal(null)
+            fetchMonitors()
+        } catch (err: any) {
+            setMessage('Erro ao atualizar: ' + err.message)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     // --- Import Handlers ---
 
     const openImportModal = async () => {
@@ -579,13 +654,22 @@ export default function CityAdminPanel() {
                                                 <Bus size={14} /> {r.vehicle_plate || 'Sem Placa'}
                                             </p>
                                         </div>
-                                        <Button
-                                            variant="ghost"
-                                            onClick={(e) => { e.stopPropagation(); setDeleteModal({ isOpen: true, type: 'route', id: r.id, name: r.route_number }) }}
-                                            className="text-gray-400 hover:text-red-500 p-2"
-                                        >
-                                            <Trash size={18} />
-                                        </Button>
+                                        <div className="flex">
+                                            <Button
+                                                variant="ghost"
+                                                onClick={(e) => { e.stopPropagation(); setEditRouteModal({ isOpen: true, route: { ...r } }) }}
+                                                className="text-gray-400 hover:text-blue-600 p-2"
+                                            >
+                                                <Edit size={18} />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                onClick={(e) => { e.stopPropagation(); setDeleteModal({ isOpen: true, type: 'route', id: r.id, name: r.route_number }) }}
+                                                className="text-gray-400 hover:text-red-500 p-2"
+                                            >
+                                                <Trash size={18} />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </Card>
                             ))}
@@ -810,7 +894,10 @@ export default function CityAdminPanel() {
                                             {routes.find(r => r.id === m.assigned_route_id)?.route_number || 'Sem Rota'}
                                         </div>
                                     </div>
-                                    <Button variant="ghost" onClick={() => setDeleteModal({ isOpen: true, type: 'monitor', id: m.id, name: m.full_name })} className="text-gray-300 hover:text-red-500"><Trash size={18} /></Button>
+                                    <div className="flex">
+                                        <Button variant="ghost" onClick={() => setEditMonitorModal({ isOpen: true, monitor: { ...m } })} className="text-gray-300 hover:text-blue-600"><Edit size={18} /></Button>
+                                        <Button variant="ghost" onClick={() => setDeleteModal({ isOpen: true, type: 'monitor', id: m.id, name: m.full_name })} className="text-gray-300 hover:text-red-500"><Trash size={18} /></Button>
+                                    </div>
                                 </Card>
                             ))}
                             {filteredMonitors.length === 0 && <div className="text-center p-8 text-gray-400 border border-dashed rounded-lg">Nenhum monitor encontrado.</div>}
@@ -850,7 +937,10 @@ export default function CityAdminPanel() {
                                             <div className="bg-blue-50 p-2 rounded-lg text-blue-600"><School size={20} /></div>
                                             <span className="font-bold text-gray-800">{s.name}</span>
                                         </div>
-                                        <Button variant="ghost" onClick={() => setDeleteModal({ isOpen: true, type: 'school', id: s.id, name: s.name })} className="text-gray-300 hover:text-red-500"><Trash size={16} /></Button>
+                                        <div className="flex">
+                                            <Button variant="ghost" onClick={() => setEditSchoolModal({ isOpen: true, school: { ...s } })} className="text-gray-300 hover:text-blue-600"><Edit size={16} /></Button>
+                                            <Button variant="ghost" onClick={() => setDeleteModal({ isOpen: true, type: 'school', id: s.id, name: s.name })} className="text-gray-300 hover:text-red-500"><Trash size={16} /></Button>
+                                        </div>
                                     </Card>
                                 ))}
                             </div>
@@ -1142,6 +1232,70 @@ export default function CityAdminPanel() {
                 </Modal>
             )}
 
+            {/* EDIT ROUTE MODAL */}
+            {editRouteModal && (
+                <Modal
+                    isOpen={true}
+                    onClose={() => setEditRouteModal(null)}
+                    title="Editar Rota"
+                >
+                    <form onSubmit={executeEditRoute} className="space-y-4">
+                        <Input label="Número da Rota" value={editRouteModal.route.route_number || ''} onChange={e => setEditRouteModal({ ...editRouteModal, route: { ...editRouteModal.route, route_number: e.target.value } })} required />
+                        <Input label="Nome do Motorista" value={editRouteModal.route.driver_name || ''} onChange={e => setEditRouteModal({ ...editRouteModal, route: { ...editRouteModal.route, driver_name: e.target.value } })} required />
+                        <Select label="Tipo de Veículo" value={editRouteModal.route.vehicle_type || ''} onChange={e => setEditRouteModal({ ...editRouteModal, route: { ...editRouteModal.route, vehicle_type: e.target.value } })}>
+                            <option value="">Selecione...</option>
+                            <option value="Micro">Micro-ônibus</option>
+                            <option value="Ônibus">Ônibus</option>
+                            <option value="Van">Van</option>
+                        </Select>
+                        <Input label="Placa do Veículo" value={editRouteModal.route.vehicle_plate || ''} onChange={e => setEditRouteModal({ ...editRouteModal, route: { ...editRouteModal.route, vehicle_plate: e.target.value } })} />
+                        <Input label="Capacidade Máxima" type="number" value={editRouteModal.route.max_capacity || ''} onChange={e => setEditRouteModal({ ...editRouteModal, route: { ...editRouteModal.route, max_capacity: e.target.value } })} />
+                        <div className="flex gap-2 pt-2">
+                            <Button type="button" variant="ghost" onClick={() => setEditRouteModal(null)} className="flex-1">Cancelar</Button>
+                            <Button type="submit" isLoading={loading} className="flex-1">Salvar Alterações</Button>
+                        </div>
+                    </form>
+                </Modal>
+            )}
+
+            {/* EDIT SCHOOL MODAL */}
+            {editSchoolModal && (
+                <Modal
+                    isOpen={true}
+                    onClose={() => setEditSchoolModal(null)}
+                    title="Editar Escola"
+                >
+                    <form onSubmit={executeEditSchool} className="space-y-4">
+                        <Input label="Nome da Escola" value={editSchoolModal.school.name || ''} onChange={e => setEditSchoolModal({ ...editSchoolModal, school: { ...editSchoolModal.school, name: e.target.value } })} required />
+                        <div className="flex gap-2 pt-2">
+                            <Button type="button" variant="ghost" onClick={() => setEditSchoolModal(null)} className="flex-1">Cancelar</Button>
+                            <Button type="submit" isLoading={loading} className="flex-1">Salvar Alterações</Button>
+                        </div>
+                    </form>
+                </Modal>
+            )}
+
+            {/* EDIT MONITOR MODAL */}
+            {editMonitorModal && (
+                <Modal
+                    isOpen={true}
+                    onClose={() => setEditMonitorModal(null)}
+                    title="Editar Monitor"
+                >
+                    <form onSubmit={executeEditMonitor} className="space-y-4">
+                        <Input label="Nome Completo" value={editMonitorModal.monitor.full_name || ''} onChange={e => setEditMonitorModal({ ...editMonitorModal, monitor: { ...editMonitorModal.monitor, full_name: e.target.value } })} required />
+                        <p className="text-sm text-gray-500">E-mail: {editMonitorModal.monitor.email}</p>
+                        <Select label="Rota Atribuída" value={editMonitorModal.monitor.assigned_route_id || ''} onChange={e => setEditMonitorModal({ ...editMonitorModal, monitor: { ...editMonitorModal.monitor, assigned_route_id: e.target.value } })}>
+                            <option value="">Sem Rota</option>
+                            {routes.map(r => <option key={r.id} value={r.id}>{r.route_number} - {r.driver_name}</option>)}
+                        </Select>
+                        <div className="flex gap-2 pt-2">
+                            <Button type="button" variant="ghost" onClick={() => setEditMonitorModal(null)} className="flex-1">Cancelar</Button>
+                            <Button type="submit" isLoading={loading} className="flex-1">Salvar Alterações</Button>
+                        </div>
+                    </form>
+                </Modal>
+            )}
             {/* MISSING FILE ALERT MODAL */}
             {missingFileModal && (
                 <Modal isOpen={true} onClose={() => setMissingFileModal(false)} title="Documentação Obrigatória">
