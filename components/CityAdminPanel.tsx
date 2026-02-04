@@ -91,14 +91,14 @@ export default function CityAdminPanel() {
             fetchMonitors()
             fetchSchools()
             // Re-fetch students when year changes
-            fetchAllStudents()
+            fetchAllStudents(selectedYear)
         }
     }, [user, selectedYear])
 
     // Re-fetch detailed route students if a route is selected and year changes
     useEffect(() => {
         if (selectedRoute) {
-            fetchRouteStudents(selectedRoute.id)
+            fetchRouteStudents(selectedRoute.id, selectedYear)
         }
     }, [selectedYear])
 
@@ -118,22 +118,22 @@ export default function CityAdminPanel() {
         if (data) setMonitors(data)
     }
 
-    const fetchAllStudents = async () => {
+    const fetchAllStudents = async (year: number) => {
         // Filter by school_year
         const { data } = await supabase.from('students')
             .select('*, schools(name), routes(route_number), user_profiles!students_created_by_fkey(full_name)')
-            .eq('school_year', selectedYear)
+            .eq('school_year', year)
             .order('full_name')
 
         if (data) setAllStudents(data)
     }
 
-    const fetchRouteStudents = async (routeId: string) => {
+    const fetchRouteStudents = async (routeId: string, year: number) => {
         // Filter by school_year
         const { data } = await supabase.from('students')
             .select('*, schools(name), user_profiles!students_created_by_fkey(full_name)')
             .eq('route_id', routeId)
-            .eq('school_year', selectedYear)
+            .eq('school_year', year)
 
         if (data) setRouteStudents(data)
     }
@@ -170,8 +170,8 @@ export default function CityAdminPanel() {
             } else if (type === 'student') {
                 const { error } = await supabase.from('students').delete().eq('id', id)
                 if (error) throw error
-                if (selectedRoute) fetchRouteStudents(selectedRoute.id)
-                fetchAllStudents()
+                if (selectedRoute) fetchRouteStudents(selectedRoute.id, selectedYear)
+                fetchAllStudents(selectedYear)
             }
             setMessage(`${type === 'route' ? 'Rota' : type === 'school' ? 'Escola' : type === 'monitor' ? 'Monitor' : 'Aluno'} excluído(a) com sucesso.`)
         } catch (err: any) {
@@ -322,8 +322,8 @@ export default function CityAdminPanel() {
             // Reset
             setNewStudent({ fullName: '', dob: '', guardianName: '', guardianPhone: '', address: '', shift: '', grade: '', schoolId: '', hasSpecialCondition: false, specialConditionDetails: '' })
             setMedicalReportFile(null)
-            fetchRouteStudents(selectedRoute.id)
-            fetchAllStudents()
+            fetchRouteStudents(selectedRoute.id, selectedYear)
+            fetchAllStudents(selectedYear)
         } catch (err: any) { setMessage(err.message) } finally { setLoading(false) }
     }
 
@@ -375,8 +375,8 @@ export default function CityAdminPanel() {
             if (error) throw error
             setMessage('Aluno atualizado com sucesso!')
             setEditStudentModal(null)
-            fetchAllStudents()
-            if (selectedRoute) fetchRouteStudents(selectedRoute.id)
+            fetchAllStudents(selectedYear)
+            if (selectedRoute) fetchRouteStudents(selectedRoute.id, selectedYear)
 
         } catch (err: any) {
             setMessage('Erro ao atualizar: ' + err.message)
@@ -641,7 +641,7 @@ export default function CityAdminPanel() {
                             {filteredRoutes.map(r => (
                                 <Card key={r.id} className="hover:shadow-md transition-shadow cursor-pointer group" >
                                     <div className="flex justify-between items-start">
-                                        <div onClick={() => { setSelectedRoute(r); fetchRouteStudents(r.id) }} className="flex-1">
+                                        <div onClick={() => { setSelectedRoute(r); fetchRouteStudents(r.id, selectedYear) }} className="flex-1">
                                             <div className="flex items-center gap-3 mb-1">
                                                 <h3 className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{r.route_number}</h3>
                                                 <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-medium border border-blue-100">
