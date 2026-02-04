@@ -518,7 +518,7 @@ export default function CityAdminPanel() {
             setMessage(`${newRecords.length} alunos importados com sucesso para ${selectedYear}!`)
             setImportModalOpen(false)
             setSelectedStudentsToImport([])
-            fetchAllStudents() // Refresh current list
+            fetchAllStudents(selectedYear) // Refresh current list
         } catch (err: any) {
             setMessage('Erro ao importar alunos: ' + err.message)
         } finally {
